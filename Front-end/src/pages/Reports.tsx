@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useStockMovements } from "@/contexts/StockMovementContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, ArrowUpRight, ArrowDownRight, Printer, Download, ListFilter, CalendarDays } from "lucide-react";
+import { FileText, ArrowUpRight, ArrowDownRight, Printer, Download, ListFilter, CalendarDays, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Reports = () => {
@@ -10,6 +10,18 @@ const Reports = () => {
   const [filterType, setFilterType] = useState<"all" | "in" | "out">("all");
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    if (isFullscreen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isFullscreen]);
 
   // Helper: parse a date string to start-of-day or end-of-day timestamp
   const parseDate = (d: string, endOfDay = false) => {
@@ -441,7 +453,7 @@ const Reports = () => {
       </div>
 
       {/* Segmented Matrix Breakdown Card */}
-      <Card className="border border-border/80 shadow-sm bg-card print:border print:shadow-none">
+      <Card className={isFullscreen ? "fixed inset-0 z-[100] bg-background border-none rounded-none p-6 flex flex-col overflow-hidden" : "border border-border/80 shadow-sm bg-card print:border print:shadow-none"}>
         <CardHeader className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-border">
           <div className="space-y-1">
             <CardTitle className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
@@ -549,19 +561,33 @@ const Reports = () => {
                 </div>
               )}
             </div>
+
+            <div className="w-px h-6 bg-border" />
+
+            {/* Fullscreen Toggle Button */}
+            <Button
+              variant="outline"
+              size="icon"
+              type="button"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground border-border bg-card"
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              title={isFullscreen ? "Exit Fullscreen" : "Fullscreen View"}
+            >
+              {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            </Button>
           </div>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto w-full max-h-[400px]">
+        <CardContent className={isFullscreen ? "p-0 flex-1 overflow-hidden flex flex-col mt-4" : "p-0"}>
+          <div className={isFullscreen ? "overflow-auto w-full flex-1" : "overflow-x-auto w-full max-h-[400px]"}>
             <table className="w-full text-xs border-collapse">
               <thead>
                 <tr className="border-b border-border bg-muted/20 text-muted-foreground whitespace-nowrap">
                   {/* Sticky ITEM Column Header */}
-                  <th className="sticky left-0 bg-background/95 backdrop-blur z-20 border-r border-border font-bold p-3 text-left uppercase tracking-wider text-[10px] min-w-[150px] max-w-[200px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                  <th className="sticky left-0 top-0 bg-background/95 backdrop-blur z-30 border-b border-r border-border font-bold p-3 text-left uppercase tracking-wider text-[10px] min-w-[150px] max-w-[200px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                     ITEM
                   </th>
                   {colHeaders.map((header) => (
-                    <th key={header.index} className="p-3 border-r border-border text-center font-bold text-[10px] min-w-[85px] last:border-r-0">
+                    <th key={header.index} className="sticky top-0 bg-background/95 backdrop-blur z-20 p-3 border-b border-r border-border text-center font-bold text-[10px] min-w-[85px] last:border-r-0">
                       <div>{header.title}</div>
                       {header.subtitle && (
                         <div className="text-[8px] font-medium text-muted-foreground mt-0.5">{header.subtitle}</div>
