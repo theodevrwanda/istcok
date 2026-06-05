@@ -91,10 +91,20 @@
 }
 
 @media print {
-  aside, header, nav, button, select, .print\:hidden {
+  @page {
+    margin: 15mm;
+    size: A4;
+  }
+
+  aside, header, nav, .print\:hidden {
     display: none !important;
   }
-  
+
+  /* Show print-only elements */
+  .print\:block {
+    display: block !important;
+  }
+
   main, .flex-1 {
     padding: 0 !important;
     margin: 0 !important;
@@ -107,12 +117,29 @@
   body {
     background: white !important;
     color: black !important;
+    font-size: 11px !important;
   }
 
-  .bg-card, .border {
+  .bg-card, .border, table {
     background-color: white !important;
     color: black !important;
-    border: 1px solid #e2e8f0 !important;
+    border-color: #cbd5e1 !important;
     box-shadow: none !important;
+  }
+
+  /* Ensure chart is visible */
+  .recharts-wrapper {
+    page-break-inside: avoid;
+  }
+
+  /* Table rows: avoid page breaks inside */
+  tr {
+    page-break-inside: avoid;
+  }
+
+  /* Force table borders for clarity */
+  table th, table td {
+    border: 1px solid #e2e8f0 !important;
+    padding: 6px 8px !important;
   }
 }

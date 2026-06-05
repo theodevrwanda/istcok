@@ -11,7 +11,7 @@ router.get("/stats", async (req, res) => {
   try {
     const [[inStats]] = await db.query("SELECT COALESCE(SUM(quantityin), 0) AS totalIn FROM StockIn");
     const [[outStats]] = await db.query("SELECT COALESCE(SUM(quantityout), 0) AS totalOut FROM StockOut");
-    const [[balanceStats]] = await db.query("SELECT COALESCE(SUM(totalquantityin), 0) AS currentBalance FROM StockIn");
+    const currentBalance = Number(inStats.totalIn) - Number(outStats.totalOut);
     const [[userStats]] = await db.query("SELECT COUNT(*) AS totalUsers FROM Users");
     
     // Also get recent movements
@@ -29,7 +29,7 @@ router.get("/stats", async (req, res) => {
     return res.json({
       totalIn: Number(inStats.totalIn),
       totalOut: Number(outStats.totalOut),
-      currentBalance: Number(balanceStats.currentBalance),
+      currentBalance: currentBalance,
       totalUsers: Number(userStats.totalUsers),
       recentMovements
     });
