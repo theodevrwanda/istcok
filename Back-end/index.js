@@ -13,7 +13,9 @@ app.use(cors({
 app.use(express.json());
 // Routes
 app.use("/api/auth", require("./Routes/auth"));
-app.use("/api/stock", require("./Routes/stock"));
+app.use("/api/stock/in", require("./Routes/stockin"));
+app.use("/api/stock/out", require("./Routes/stockout"));
+app.use("/api/stock/stats", require("./Routes/dashboard"));
 
 // Root Route
 app.get("/", (req, res) => {
