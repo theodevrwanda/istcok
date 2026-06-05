@@ -21,9 +21,9 @@ export default defineConfig(({ mode }) => ({
       injectRegister: 'script',
       includeAssets: ['logo.jpg', 'robots.txt', 'favicon.ico'],
       manifest: {
-        id: 'istock-dashboard-pwa',
-        name: 'iStock Stock Management',
-        short_name: 'iStock',
+        id: 'sms-dashboard-pwa',
+        name: 'SMS Stock Management',
+        short_name: 'SMS',
         description: 'Advanced Inventory & Stock Management System',
         orientation: 'portrait',
         theme_color: '#0f172a',

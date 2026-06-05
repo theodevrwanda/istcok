@@ -84,7 +84,7 @@ export const StockMovementProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     // Only run if token exists
-    const token = localStorage.getItem("istock_token");
+    const token = localStorage.getItem("sms_token");
     if (token) {
       refreshData();
     }

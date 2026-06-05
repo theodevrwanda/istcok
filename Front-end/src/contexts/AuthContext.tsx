@@ -29,7 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response: any = await api.get("/auth/me");
       setUser(response);
-      localStorage.setItem("istock_session", JSON.stringify(response));
+      localStorage.setItem("sms_session", JSON.stringify(response));
     } catch (err) {
       console.error("Profile fetch failed:", err);
       logout();
@@ -37,8 +37,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("istock_token");
-    const session = localStorage.getItem("istock_session");
+    const token = localStorage.getItem("sms_token");
+    const session = localStorage.getItem("sms_session");
     if (token && session) {
       setUser(JSON.parse(session));
       fetchProfile();
@@ -48,8 +48,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (user_name: string, password: string) => {
     const response: any = await api.post("/auth/login", { user_name, password });
-    localStorage.setItem("istock_token", response.token);
-    localStorage.setItem("istock_session", JSON.stringify(response.user));
+    localStorage.setItem("sms_token", response.token);
+    localStorage.setItem("sms_session", JSON.stringify(response.user));
     setUser(response.user);
   };
 
@@ -58,8 +58,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    localStorage.removeItem("istock_token");
-    localStorage.removeItem("istock_session");
+    localStorage.removeItem("sms_token");
+    localStorage.removeItem("sms_session");
     setUser(null);
   };
 

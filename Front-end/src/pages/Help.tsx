@@ -152,7 +152,7 @@ const Help = () => {
         <HelpCircle className="h-6 w-6 text-foreground" />
         <div>
           <h1 className="text-xl font-bold text-foreground">Help Center & Documentation</h1>
-          <p className="text-xs text-muted-foreground">Find step-by-step guides on how to manage the iStock dashboard.</p>
+          <p className="text-xs text-muted-foreground">Find step-by-step guides on how to manage the SMS dashboard.</p>
         </div>
       </div>
       <div className="space-y-3">

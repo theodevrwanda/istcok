@@ -51,8 +51,8 @@ function ReloadPrompt() {
             </h4>
             <p className="text-xs text-muted-foreground leading-snug">
               {needUpdate 
-                ? 'A new version of iStock is ready. Refresh to update.' 
-                : 'App cached for offline use. You can now use iStock as a desktop app.'}
+                ? 'A new version of SMS is ready. Refresh to update.' 
+                : 'App cached for offline use. You can now use SMS as a desktop app.'}
             </p>
           </div>
         </div>

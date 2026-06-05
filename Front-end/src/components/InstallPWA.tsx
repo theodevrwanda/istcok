@@ -45,7 +45,7 @@ export const InstallPWA = ({ iconOnly }: InstallPWAProps) => {
       size={iconOnly ? "icon" : "sm"}
       onClick={handleInstall}
       className={`gap-2 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 font-bold transition-all ${iconOnly ? 'w-8 h-8 mx-auto' : 'w-full text-xs'}`}
-      title="Install iStock Admin"
+      title="Install SMS Admin"
     >
       <Download size={iconOnly ? 16 : 14} />
       {!iconOnly && "Install App"}
