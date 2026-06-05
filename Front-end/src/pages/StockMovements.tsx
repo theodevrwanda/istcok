@@ -20,6 +20,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
   const { 
@@ -38,6 +48,8 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
   const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Form states
   const [stockInForm, setStockInForm] = useState({
@@ -125,17 +137,20 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this record? This action cannot be undone.")) {
-      try {
-        if (mode === "in") {
-          await deleteStockIn(id);
-        } else {
-          await deleteStockOut(id);
-        }
-      } catch (err: any) {
-        alert(err.message || "An error occurred during deletion.");
+  const handleDelete = async () => {
+    if (deleteConfirmId === null) return;
+    setIsDeleting(true);
+    try {
+      if (mode === "in") {
+        await deleteStockIn(deleteConfirmId);
+      } else {
+        await deleteStockOut(deleteConfirmId);
       }
+      setDeleteConfirmId(null);
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -510,7 +525,7 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          onClick={() => handleDelete(m.stock_id)}
+                          onClick={() => setDeleteConfirmId(m.stock_id)}
                           className="h-7 w-7 text-destructive hover:bg-muted"
                           title="Delete"
                         >
@@ -595,7 +610,7 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          onClick={() => handleDelete(m.stock_id)}
+                          onClick={() => setDeleteConfirmId(m.stock_id)}
                           className="h-7 w-7 text-destructive hover:bg-muted"
                           title="Delete"
                         >
@@ -818,6 +833,48 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteConfirmId !== null} onOpenChange={(open) => !open && !isDeleting && setDeleteConfirmId(null)}>
+        <AlertDialogContent className="sm:max-w-md text-xs">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-sm font-bold flex items-center gap-2 text-destructive">
+              <Trash2 className="h-4 w-4" />
+              Delete Record Permanently?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-muted-foreground pt-1 space-y-2">
+              <p>
+                Are you sure you want to delete this {mode === "in" ? "Stock In" : "Stock Out"} transaction? This action is permanent and cannot be undone.
+              </p>
+              {mode === "in" && (
+                <div className="p-2 border border-destructive/20 bg-destructive/5 rounded text-destructive font-medium">
+                  <strong>Warning:</strong> Deleting this Stock In record will also cascade delete all referenced Stock Out transactions associated with this batch!
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4">
+            <AlertDialogCancel 
+              className="text-xs h-8" 
+              disabled={isDeleting}
+              onClick={() => setDeleteConfirmId(null)}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={isDeleting}
+              className="text-xs h-8 bg-destructive text-destructive-foreground hover:bg-destructive/90 font-bold gap-1.5"
+            >
+              {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+              Confirm Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
