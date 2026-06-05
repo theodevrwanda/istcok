@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Lock, User, Loader2, Sun, Moon, Package, BarChart3, ClipboardCheck, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import api from "@/lib/api";
 
 const Login = () => {
   const { theme, toggleTheme } = useTheme();
@@ -17,6 +18,11 @@ const Login = () => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const { login, register } = useAuth();
+
+  // Reset password states
+  const [isUserVerified, setIsUserVerified] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleRegisterSubmit = async () => {
     if (!username || !password) {
@@ -72,7 +78,7 @@ const Login = () => {
 
   const handleForgotPassword = async () => {
     if (!username) {
-      setError("Please enter your username first.");
+      setError("Please enter your username.");
       return;
     }
 
@@ -81,9 +87,43 @@ const Login = () => {
     setSuccess("");
 
     try {
-      setSuccess("Password reset simulation: contact your system administrator.");
+      if (!isUserVerified) {
+        // Step 1: Verify user exists
+        const res: any = await api.post("/auth/verify-username", { user_name: username.trim() });
+        if (res.exists) {
+          setIsUserVerified(true);
+          setSuccess("Username verified. Please set your new password below.");
+        }
+      } else {
+        // Step 2: Reset password
+        if (!newPassword || !confirmPassword) {
+          setError("Please enter and confirm your new password.");
+          setIsResetting(false);
+          return;
+        }
+        if (newPassword !== confirmPassword) {
+          setError("Passwords do not match.");
+          setIsResetting(false);
+          return;
+        }
+
+        await api.post("/auth/reset-password", {
+          user_name: username.trim(),
+          password: newPassword
+        });
+
+        setSuccess("Password updated successfully! Redirecting to login...");
+        setTimeout(() => {
+          setView("login");
+          setIsUserVerified(false);
+          setUsername("");
+          setNewPassword("");
+          setConfirmPassword("");
+          setSuccess("");
+        }, 2000);
+      }
     } catch (err: any) {
-      setError("Failed to process request.");
+      setError(err.response?.data?.message || "Failed to process request.");
     } finally {
       setIsResetting(false);
     }
@@ -250,7 +290,7 @@ const Login = () => {
                   onChange={(e) => { setUsername(e.target.value); setError(""); setSuccess(""); }}
                   placeholder="Enter username"
                   className="h-10 pl-10 text-xs bg-muted/20 rounded-lg"
-                  disabled={isLoggingIn || isResetting}
+                  disabled={isLoggingIn || isResetting || (view === "forgot" && isUserVerified)}
                 />
               </div>
             </div>
@@ -292,10 +332,67 @@ const Login = () => {
               </div>
             )}
 
+            {/* Stage 2 Password Inputs for Reset Flow */}
+            {view === "forgot" && isUserVerified && (
+              <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold">New Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(e) => { setNewPassword(e.target.value); setError(""); }}
+                      placeholder="Enter new password"
+                      className="h-10 pl-10 pr-10 text-xs bg-muted/20 rounded-lg"
+                      disabled={isResetting}
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => setShowPassword(!showPassword)} 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      disabled={isResetting}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold">Confirm New Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => { setConfirmPassword(e.target.value); setError(""); }}
+                      placeholder="Confirm new password"
+                      className="h-10 pl-10 pr-10 text-xs bg-muted/20 rounded-lg"
+                      disabled={isResetting}
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => setShowPassword(!showPassword)} 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      disabled={isResetting}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2 pt-2">
               <Button type="submit" className="w-full h-10 text-xs font-bold rounded-lg" disabled={isLoggingIn || isResetting}>
                 {isLoggingIn || isResetting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                {view === "login" ? "Sign In" : view === "register" ? "Sign Up" : "Request Reset"}
+                {view === "login" 
+                  ? "Sign In" 
+                  : view === "register" 
+                  ? "Sign Up" 
+                  : !isUserVerified 
+                  ? "Verify Username" 
+                  : "Reset Password"}
               </Button>
               
               <div className="flex justify-between items-center text-[11px] font-medium pt-2">
@@ -313,7 +410,14 @@ const Login = () => {
                 ) : (
                   <button 
                     type="button" 
-                    onClick={() => { setView("login"); setError(""); setSuccess(""); }}
+                    onClick={() => { 
+                      setView("login"); 
+                      setError(""); 
+                      setSuccess(""); 
+                      setIsUserVerified(false); 
+                      setNewPassword(""); 
+                      setConfirmPassword(""); 
+                    }}
                     className="w-full text-center text-primary font-bold hover:underline py-1"
                   >
                     Back to Sign In

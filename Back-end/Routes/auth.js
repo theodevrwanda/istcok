@@ -100,4 +100,50 @@ router.get("/me", authMiddleware, async (req, res) => {
   }
 });
 
+// 4. Verify Username exists (for password reset)
+router.post("/verify-username", async (req, res) => {
+  const { user_name } = req.body;
+
+  if (!user_name) {
+    return res.status(400).json({ message: "Username is required." });
+  }
+
+  try {
+    const [users] = await db.query("SELECT user_id FROM Users WHERE user_name = ?", [user_name.trim()]);
+    if (users.length === 0) {
+      return res.status(404).json({ message: "Username does not exist." });
+    }
+    return res.json({ message: "Username verified.", exists: true });
+  } catch (error) {
+    console.error("Verify username error:", error);
+    return res.status(500).json({ message: "Database error during username verification." });
+  }
+});
+
+// 5. Reset Password (for password reset after validation)
+router.post("/reset-password", async (req, res) => {
+  const { user_name, password } = req.body;
+
+  if (!user_name || !password) {
+    return res.status(400).json({ message: "Username and new password are required." });
+  }
+
+  try {
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Update password in DB
+    const [result] = await db.query("UPDATE Users SET password = ? WHERE user_name = ?", [hashedPassword, user_name.trim()]);
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "User not found or password not updated." });
+    }
+
+    return res.json({ message: "Password updated successfully." });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    return res.status(500).json({ message: "Database error during password reset." });
+  }
+});
+
 module.exports = router;

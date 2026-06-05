@@ -1,18 +1,17 @@
 {
-  "name": "Oluxy",
-  "short_name": "Oluxy Admin",
-  "description": "Luxury  Management System",
+  "name": "SMS Stock Management System",
+  "short_name": "SMS",
+  "description": "Advanced Inventory & Stock Management System",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#15573f",
+  "theme_color": "#0d9488",
   "icons": [
     {
-      "src": "/pwa-icon-512.png",
+      "src": "/sms-logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "gcm_sender_id": "103953800507"
+  ]
 }
