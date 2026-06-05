@@ -126,14 +126,16 @@ const Login = () => {
 
         {/* Content over image */}
         <div className="relative z-10 flex flex-col justify-between p-10 w-full">
-          {/* Top branding */}
+          {/* Top: Logo */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-              <Package className="h-5 w-5 text-teal-300" />
-            </div>
+            <img
+              src="/sms-logo.png"
+              alt="SMS Logo"
+              className="w-11 h-11 rounded-xl object-cover shadow-md border border-slate-200/50"
+            />
             <div>
-              <h2 className="text-white font-black text-sm tracking-tight">SMS</h2>
-              <p className="text-white/50 text-[10px] font-medium">Stock Management System</p>
+              <h2 className="text-white font-black text-base tracking-tight">SMS</h2>
+              <p className="text-white/50 text-[10px] font-semibold uppercase tracking-widest">Stock Management</p>
             </div>
           </div>
 
@@ -199,17 +201,17 @@ const Login = () => {
       {/* RIGHT SIDE — Login Form */}
       <div className="w-full lg:w-[45%] flex items-center justify-center p-6 sm:p-10">
         <div className="w-full max-w-sm space-y-6">
-          {/* Mobile-only branding */}
+          {/* Mobile branding */}
           <div className="text-center space-y-4 lg:hidden">
             <div className="flex justify-center">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-lg">
-                <Package className="h-8 w-8 text-white" />
-              </div>
+              <img
+                src="/sms-logo.png"
+                alt="SMS Logo"
+                className="w-16 h-16 rounded-2xl object-cover shadow-lg border border-slate-200/50"
+              />
             </div>
-            <div>
-              <h1 className="text-2xl font-black text-foreground tracking-tight">Stock Management System</h1>
-              <p className="text-xs text-muted-foreground mt-1">Sign in to manage your inventory</p>
-            </div>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Stock Management System</h1>
+            <p className="text-slate-500 text-xs">Sign in to manage your inventory</p>
           </div>
 
           {/* Desktop heading */}
