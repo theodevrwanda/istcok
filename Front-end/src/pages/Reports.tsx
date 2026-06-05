@@ -67,7 +67,7 @@ const Reports = () => {
         balance: item.totalquantityout,
         date: item.stockoutDate,
         operator: item.user_name || "System",
-        detail: `Ref Batch: #${item.stock_id_fk}`
+        detail: `Ref Batch: #${item.stock_id}`
       });
     });
 

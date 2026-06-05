@@ -61,7 +61,7 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
   });
 
   const [stockOutForm, setStockOutForm] = useState({
-    stock_id_fk: "",
+    stock_id: "",
     quantityout: 1,
     stockoutDate: new Date().toISOString().split("T")[0],
   });
@@ -161,12 +161,12 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
   const handleCreateStockOut = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
-    if (!stockOutForm.stock_id_fk || !stockOutForm.stockoutDate) {
+    if (!stockOutForm.stock_id || !stockOutForm.stockoutDate) {
       setErrorMsg("Please select a target Stock In batch.");
       return;
     }
 
-    const selectedBatch = stockInList.find(b => b.stock_id === Number(stockOutForm.stock_id_fk));
+    const selectedBatch = stockInList.find(b => b.stock_id === Number(stockOutForm.stock_id));
     if (!selectedBatch) {
       setErrorMsg("Invalid Stock In batch selected.");
       return;
@@ -180,13 +180,13 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
     setSubmitting(true);
     try {
       await addStockOut({
-        stock_id_fk: Number(stockOutForm.stock_id_fk),
+        stock_id: Number(stockOutForm.stock_id),
         quantityout: Number(stockOutForm.quantityout),
         stockoutDate: stockOutForm.stockoutDate,
       });
       setIsDialogOpen(false);
       setStockOutForm({
-        stock_id_fk: "",
+        stock_id: "",
         quantityout: 1,
         stockoutDate: new Date().toISOString().split("T")[0],
       });
@@ -197,8 +197,8 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
     }
   };
 
-  const selectedBatchInfo = stockOutForm.stock_id_fk 
-    ? stockInList.find(b => b.stock_id === Number(stockOutForm.stock_id_fk))
+  const selectedBatchInfo = stockOutForm.stock_id 
+    ? stockInList.find(b => b.stock_id === Number(stockOutForm.stock_id))
     : null;
 
   // Filter lists based on search
@@ -212,8 +212,8 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
   const filteredOutList = stockOutList.filter(item => 
     (item.ItemName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     (item.user_name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-    String(item.stock_id_fk).includes(searchTerm) ||
-    String(item.stock_id).includes(searchTerm)
+    String(item.stock_id).includes(searchTerm) ||
+    String(item.stockout_id).includes(searchTerm)
   );
 
   const pageTitle = mode === "in" ? "Stock In Transactions" : "Stock Out Transactions";
@@ -329,9 +329,9 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
                   <div className="space-y-2">
                     <Label className="text-xs font-semibold">Select Stock In Batch *</Label>
                     <Select 
-                      value={stockOutForm.stock_id_fk} 
+                      value={stockOutForm.stock_id} 
                       onValueChange={(val) => {
-                        setStockOutForm({...stockOutForm, stock_id_fk: val});
+                        setStockOutForm({...stockOutForm, stock_id: val});
                         setErrorMsg("");
                       }}
                     >
@@ -403,7 +403,7 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
                     </div>
                   )}
 
-                  <Button type="submit" disabled={submitting || !stockOutForm.stock_id_fk} className="w-full">
+                  <Button type="submit" disabled={submitting || !stockOutForm.stock_id} className="w-full">
                     {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                     Save Stock Out Record
                   </Button>
@@ -534,8 +534,8 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
                 </tr>
               ) : (
                 filteredOutList.map((m) => (
-                  <tr key={m.stock_id} className="border-b border-border last:border-0 hover:bg-muted/50 transition-colors">
-                    <td className="p-3 font-mono font-bold text-muted-foreground">#{m.stock_id}</td>
+                  <tr key={m.stockout_id} className="border-b border-border last:border-0 hover:bg-muted/50 transition-colors">
+                    <td className="p-3 font-mono font-bold text-muted-foreground">#{m.stockout_id}</td>
                     <td className="p-3 font-medium text-foreground">{m.ItemName || "Unknown Item"}</td>
                     <td className="p-3 text-foreground font-bold">{m.quantityout}</td>
                     <td className="p-3 text-muted-foreground font-semibold">{m.totalquantityout}</td>
@@ -547,7 +547,7 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
                         year: "numeric"
                       })}
                     </td>
-                    <td className="p-3 font-mono font-bold text-muted-foreground">#{m.stock_id_fk}</td>
+                    <td className="p-3 font-mono font-bold text-muted-foreground">#{m.stock_id}</td>
                     <td className="p-3">
                       <div className="flex items-center gap-1">
                         <Button 
@@ -565,7 +565,7 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          onClick={() => setDeleteConfirmId(m.stock_id)}
+                          onClick={() => setDeleteConfirmId(m.stockout_id)}
                           className="h-7 w-7 text-destructive hover:bg-muted"
                           title="Delete"
                         >
@@ -591,7 +591,7 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
             <div className="space-y-3 py-2 text-xs">
               <div className="grid grid-cols-2 gap-2 border-b border-border/50 pb-2">
                 <span className="text-muted-foreground font-medium">Transaction ID:</span>
-                <span className="font-mono font-bold text-foreground">#{selectedItem.stock_id}</span>
+                <span className="font-mono font-bold text-foreground">#{selectedItem.type === 'out' ? selectedItem.stockout_id : selectedItem.stock_id}</span>
               </div>
               <div className="grid grid-cols-2 gap-2 border-b border-border/50 pb-2">
                 <span className="text-muted-foreground font-medium">Item Name:</span>
@@ -643,7 +643,7 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
                   </div>
                   <div className="grid grid-cols-2 gap-2 border-b border-border/50 pb-2">
                     <span className="text-muted-foreground font-medium">Referenced Batch ID:</span>
-                    <span className="font-mono font-bold text-foreground">#{selectedItem.stock_id_fk}</span>
+                    <span className="font-mono font-bold text-foreground">#{selectedItem.stock_id}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 border-b border-border/50 pb-2">
                     <span className="text-muted-foreground font-medium">Operator / User:</span>

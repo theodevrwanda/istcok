@@ -15,11 +15,11 @@ export interface StockInRecord {
 }
 
 export interface StockOutRecord {
-  stock_id: number;
+  stockout_id: number;
   quantityout: number;
   totalquantityout: number;
   stockoutDate: string;
-  stock_id_fk: number;
+  stock_id: number;
   user_id: number;
   ItemName?: string;
   Description?: string;
@@ -49,7 +49,7 @@ interface StockMovementContextType {
     stockDate: string;
   }) => Promise<void>;
   addStockOut: (data: {
-    stock_id_fk: number;
+    stock_id: number;
     quantityout: number;
     stockoutDate: string;
   }) => Promise<void>;
@@ -62,7 +62,7 @@ interface StockMovementContextType {
   }) => Promise<void>;
   deleteStockIn: (id: number) => Promise<void>;
   updateStockOut: (id: number, data: {
-    stock_id_fk: number;
+    stock_id: number;
     quantityout: number;
     stockoutDate: string;
   }) => Promise<void>;
@@ -127,7 +127,7 @@ export const StockMovementProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const addStockOut = async (data: {
-    stock_id_fk: number;
+    stock_id: number;
     quantityout: number;
     stockoutDate: string;
   }) => {
@@ -175,7 +175,7 @@ export const StockMovementProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const updateStockOut = async (id: number, data: {
-    stock_id_fk: number;
+    stock_id: number;
     quantityout: number;
     stockoutDate: string;
   }) => {

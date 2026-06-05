@@ -19,7 +19,7 @@ router.get("/", async (req, res) => {
       "SELECT s.stock_id as id, s.ItemName as name, 'in' as type, s.quantityin as quantity, s.stockDate as date, u.user_name as recorder FROM StockIn s LEFT JOIN Users u ON s.user_id = u.user_id ORDER BY s.stockDate DESC, s.stock_id DESC LIMIT 5"
     );
     const [recentOut] = await db.query(
-      "SELECT o.stock_id as id, i.ItemName as name, 'out' as type, o.quantityout as quantity, o.stockoutDate as date, u.user_name as recorder FROM StockOut o JOIN StockIn i ON o.stock_id_fk = i.stock_id LEFT JOIN Users u ON o.user_id = u.user_id ORDER BY o.stockoutDate DESC, o.stock_id DESC LIMIT 5"
+      "SELECT o.stockout_id as id, i.ItemName as name, 'out' as type, o.quantityout as quantity, o.stockoutDate as date, u.user_name as recorder FROM StockOut o JOIN StockIn i ON o.stock_id = i.stock_id LEFT JOIN Users u ON o.user_id = u.user_id ORDER BY o.stockoutDate DESC, o.stockout_id DESC LIMIT 5"
     );
 
     const recentMovements = [...recentIn, ...recentOut]

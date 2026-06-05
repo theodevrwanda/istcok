@@ -167,7 +167,7 @@ const Header = ({ onLogout }: HeaderProps) => {
                               </div>
                               <div>
                                 <p className="text-xs font-bold text-foreground leading-tight">{r.ItemName || "N/A"}</p>
-                                <p className="text-[9px] text-muted-foreground font-medium">Out ID #{r.stock_id} · Batch ref: #{r.stock_id_fk}</p>
+                                <p className="text-[9px] text-muted-foreground font-medium">Out ID #{r.stockout_id} · Batch ref: #{r.stock_id}</p>
                               </div>
                             </div>
                             <span className="text-2xs font-extrabold text-foreground bg-muted px-2 py-0.5 rounded">

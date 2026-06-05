@@ -12,9 +12,9 @@ router.get("/", async (req, res) => {
     const [rows] = await db.query(
       `SELECT o.*, i.ItemName, i.Description, i.supplierName, u.user_name 
        FROM StockOut o 
-       JOIN StockIn i ON o.stock_id_fk = i.stock_id 
+       JOIN StockIn i ON o.stock_id = i.stock_id 
        LEFT JOIN Users u ON o.user_id = u.user_id 
-       ORDER BY o.stockoutDate DESC, o.stock_id DESC`
+       ORDER BY o.stockoutDate DESC, o.stockout_id DESC`
     );
     return res.json(rows);
   } catch (error) {
@@ -25,10 +25,10 @@ router.get("/", async (req, res) => {
 
 // 2. Record Stock Out
 router.post("/", async (req, res) => {
-  const { stock_id_fk, quantityout, stockoutDate } = req.body;
+  const { stock_id, quantityout, stockoutDate } = req.body;
 
-  if (stock_id_fk === undefined || quantityout === undefined || !stockoutDate) {
-    return res.status(400).json({ message: "stock_id_fk, quantityout, and stockoutDate are required." });
+  if (stock_id === undefined || quantityout === undefined || !stockoutDate) {
+    return res.status(400).json({ message: "stock_id, quantityout, and stockoutDate are required." });
   }
 
   const parsedQty = parseInt(quantityout);
@@ -40,7 +40,7 @@ router.post("/", async (req, res) => {
     const user_id = req.user.user_id;
 
     // Check availability from the target StockIn batch
-    const [batches] = await db.query("SELECT * FROM StockIn WHERE stock_id = ?", [stock_id_fk]);
+    const [batches] = await db.query("SELECT * FROM StockIn WHERE stock_id = ?", [stock_id]);
     if (batches.length === 0) {
       return res.status(404).json({ message: "The referenced StockIn batch was not found." });
     }
@@ -59,13 +59,13 @@ router.post("/", async (req, res) => {
     await db.query("START TRANSACTION");
 
     // Update the StockIn batch remaining quantity
-    await db.query("UPDATE StockIn SET totalquantityin = ? WHERE stock_id = ?", [newTotalRemaining, stock_id_fk]);
+    await db.query("UPDATE StockIn SET totalquantityin = ? WHERE stock_id = ?", [newTotalRemaining, stock_id]);
 
     // Insert StockOut record
     const [result] = await db.query(
-      `INSERT INTO StockOut (quantityout, totalquantityout, stockoutDate, stock_id_fk, user_id) 
+      `INSERT INTO StockOut (quantityout, totalquantityout, stockoutDate, stock_id, user_id) 
        VALUES (?, ?, ?, ?, ?)`,
-      [parsedQty, newTotalRemaining, stockoutDate, stock_id_fk, user_id]
+      [parsedQty, newTotalRemaining, stockoutDate, stock_id, user_id]
     );
 
     await db.query("COMMIT");
@@ -73,9 +73,9 @@ router.post("/", async (req, res) => {
     const [newRecord] = await db.query(
       `SELECT o.*, i.ItemName, i.Description, i.supplierName, u.user_name 
        FROM StockOut o 
-       JOIN StockIn i ON o.stock_id_fk = i.stock_id 
+       JOIN StockIn i ON o.stock_id = i.stock_id 
        LEFT JOIN Users u ON o.user_id = u.user_id 
-       WHERE o.stock_id = ?`,
+       WHERE o.stockout_id = ?`,
       [result.insertId]
     );
 
@@ -91,10 +91,10 @@ router.post("/", async (req, res) => {
 // 3. Update Stock Out Record
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { stock_id_fk, quantityout, stockoutDate } = req.body;
+  const { stock_id, quantityout, stockoutDate } = req.body;
 
-  if (stock_id_fk === undefined || quantityout === undefined || !stockoutDate) {
-    return res.status(400).json({ message: "stock_id_fk, quantityout, and stockoutDate are required." });
+  if (stock_id === undefined || quantityout === undefined || !stockoutDate) {
+    return res.status(400).json({ message: "stock_id, quantityout, and stockoutDate are required." });
   }
 
   const parsedQty = parseInt(quantityout);
@@ -107,21 +107,21 @@ router.put("/:id", async (req, res) => {
     await conn.beginTransaction();
 
     // Get current StockOut details
-    const [outRecords] = await conn.query("SELECT stock_id_fk, quantityout FROM StockOut WHERE stock_id = ?", [id]);
+    const [outRecords] = await conn.query("SELECT stock_id, quantityout FROM StockOut WHERE stockout_id = ?", [id]);
     if (outRecords.length === 0) {
       await conn.rollback();
       conn.release();
       return res.status(404).json({ message: "Stock Out record not found." });
     }
 
-    const oldBatchId = outRecords[0].stock_id_fk;
+    const oldBatchId = outRecords[0].stock_id;
     const oldQty = outRecords[0].quantityout;
 
     // 1. Restore old quantity to the original StockIn batch
     await conn.query("UPDATE StockIn SET totalquantityin = totalquantityin + ? WHERE stock_id = ?", [oldQty, oldBatchId]);
 
     // 2. Fetch target StockIn batch to verify availability
-    const [batches] = await conn.query("SELECT totalquantityin FROM StockIn WHERE stock_id = ?", [stock_id_fk]);
+    const [batches] = await conn.query("SELECT totalquantityin FROM StockIn WHERE stock_id = ?", [stock_id]);
     if (batches.length === 0) {
       await conn.rollback();
       conn.release();
@@ -137,14 +137,14 @@ router.put("/:id", async (req, res) => {
 
     // 3. Subtract new quantity from target StockIn batch
     const newTotalRemaining = available - parsedQty;
-    await conn.query("UPDATE StockIn SET totalquantityin = ? WHERE stock_id = ?", [newTotalRemaining, stock_id_fk]);
+    await conn.query("UPDATE StockIn SET totalquantityin = ? WHERE stock_id = ?", [newTotalRemaining, stock_id]);
 
     // 4. Update StockOut record
     await conn.query(
       `UPDATE StockOut 
-       SET quantityout = ?, totalquantityout = ?, stockoutDate = ?, stock_id_fk = ? 
-       WHERE stock_id = ?`,
-      [parsedQty, newTotalRemaining, stockoutDate, stock_id_fk, id]
+       SET quantityout = ?, totalquantityout = ?, stockoutDate = ?, stock_id = ? 
+       WHERE stockout_id = ?`,
+      [parsedQty, newTotalRemaining, stockoutDate, stock_id, id]
     );
 
     await conn.commit();
@@ -153,9 +153,9 @@ router.put("/:id", async (req, res) => {
     const [updatedRecord] = await db.query(
       `SELECT o.*, i.ItemName, i.Description, i.supplierName, u.user_name 
        FROM StockOut o 
-       JOIN StockIn i ON o.stock_id_fk = i.stock_id 
+       JOIN StockIn i ON o.stock_id = i.stock_id 
        LEFT JOIN Users u ON o.user_id = u.user_id 
-       WHERE o.stock_id = ?`,
+       WHERE o.stockout_id = ?`,
       [id]
     );
 
@@ -176,20 +176,20 @@ router.delete("/:id", async (req, res) => {
     await conn.beginTransaction();
 
     // Get stock out details
-    const [records] = await conn.query("SELECT stock_id_fk, quantityout FROM StockOut WHERE stock_id = ?", [id]);
+    const [records] = await conn.query("SELECT stock_id, quantityout FROM StockOut WHERE stockout_id = ?", [id]);
     if (records.length === 0) {
       await conn.rollback();
       conn.release();
       return res.status(404).json({ message: "Stock Out record not found." });
     }
 
-    const { stock_id_fk, quantityout } = records[0];
+    const { stock_id, quantityout } = records[0];
 
     // Update StockIn (return the quantity)
-    await conn.query("UPDATE StockIn SET totalquantityin = totalquantityin + ? WHERE stock_id = ?", [quantityout, stock_id_fk]);
+    await conn.query("UPDATE StockIn SET totalquantityin = totalquantityin + ? WHERE stock_id = ?", [quantityout, stock_id]);
 
     // Delete StockOut record
-    await conn.query("DELETE FROM StockOut WHERE stock_id = ?", [id]);
+    await conn.query("DELETE FROM StockOut WHERE stockout_id = ?", [id]);
 
     await conn.commit();
     conn.release();

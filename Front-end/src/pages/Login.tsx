@@ -176,7 +176,9 @@ const Login = () => {
           <div className="space-y-6 max-w-lg">
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 backdrop-blur-sm">
-
+                <div className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
+                <span className="text-[10px] font-bold text-teal-300 uppercase tracking-wider">System Online</span>
+              </div>
               <h1 className="text-4xl xl:text-5xl font-black text-white leading-tight">
                 Manage Your
                 <br />
@@ -375,19 +377,8 @@ const Login = () => {
                   : "Reset Password"}
               </Button>
               
-              <div className="flex justify-between items-center text-[11px] font-medium pt-2">
-                {view === "login" ? (
-                  <span>
-                    Don't have an account?{" "}
-                    <button 
-                      type="button" 
-                      onClick={() => { setView("register"); }}
-                      className="text-primary font-bold hover:underline"
-                    >
-                      Create Account
-                    </button>
-                  </span>
-                ) : (
+              {view !== "login" && (
+                <div className="flex justify-between items-center text-[11px] font-medium pt-2">
                   <button 
                     type="button" 
                     onClick={() => { 
@@ -400,13 +391,10 @@ const Login = () => {
                   >
                     Back to Sign In
                   </button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
             
-            <p className="text-[10px] text-center text-muted-foreground pt-2 font-medium">
-               Registered personnel session tracking is active.
-            </p>
           </form>
 
           {/* Mobile-only feature strip */}

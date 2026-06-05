@@ -23,12 +23,12 @@ CREATE TABLE IF NOT EXISTS StockIn (
 
 -- 3. StockOut Table
 CREATE TABLE IF NOT EXISTS StockOut (
-  stock_id INT AUTO_INCREMENT PRIMARY KEY,
+  stockout_id INT AUTO_INCREMENT PRIMARY KEY,
   quantityout INT NOT NULL,
   totalquantityout INT NOT NULL,
   stockoutDate DATE NOT NULL,
-  stock_id_fk INT NOT NULL,
+  stock_id INT NOT NULL,
   user_id INT,
-  FOREIGN KEY (stock_id_fk) REFERENCES StockIn(stock_id) ON DELETE CASCADE,
+  FOREIGN KEY (stock_id) REFERENCES StockIn(stock_id) ON DELETE CASCADE,
   FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE SET NULL
 );
