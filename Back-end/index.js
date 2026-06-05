@@ -28,7 +28,8 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: "An unexpected server error occurred." });
 });
 
-// Start Server
+// Start Server (reloaded to bind port)
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
