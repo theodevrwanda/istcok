@@ -19,39 +19,39 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: 'prompt',
       injectRegister: 'script',
-      includeAssets: ['logo.jpg', 'robots.txt', 'favicon.ico'],
+      includeAssets: ['sms-logo.png', 'robots.txt', 'favicon.ico'],
       manifest: {
         id: 'sms-dashboard-pwa',
         name: 'SMS Stock Management',
         short_name: 'SMS',
         description: 'Advanced Inventory & Stock Management System',
         orientation: 'portrait',
-        theme_color: '#0f172a',
-        background_color: '#0f172a',
+        theme_color: '#0d9488',
+        background_color: '#ffffff',
         display: 'standalone',
         start_url: '/',
         scope: '/',
         icons: [
           {
-            src: 'pwa-icon-512.png',
+            src: 'sms-logo.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: 'pwa-icon-512.png',
+            src: 'sms-logo.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'maskable'
           },
           {
-            src: 'pwa-icon-512.png',
+            src: 'sms-logo.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: 'pwa-icon-512.png',
+            src: 'sms-logo.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
