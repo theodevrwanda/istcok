@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { StockMovementProvider } from "@/contexts/StockMovementContext";
 import StockMovements from "./pages/StockMovements";
+import Reports from "./pages/Reports";
 import { Loader2 } from "lucide-react";
 import ReloadPrompt from "@/components/ReloadPrompt";
 
@@ -39,6 +40,7 @@ const AppContent = () => {
           <Route path="/" element={<Dashboard />} />
           <Route path="/stock-in" element={<StockMovements mode="in" />} />
           <Route path="/stock-out" element={<StockMovements mode="out" />} />
+          <Route path="/reports" element={<Reports />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </DashboardLayout>

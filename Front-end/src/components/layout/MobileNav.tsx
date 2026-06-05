@@ -1,4 +1,4 @@
-import { LayoutDashboard, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { LayoutDashboard, ArrowUpRight, ArrowDownRight, BarChart3 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const MobileNav = () => {
@@ -8,6 +8,7 @@ const MobileNav = () => {
     { label: "Dashboard", icon: LayoutDashboard, path: "/" },
     { label: "Stock In", icon: ArrowUpRight, path: "/stock-in" },
     { label: "Stock Out", icon: ArrowDownRight, path: "/stock-out" },
+    { label: "Reports", icon: BarChart3, path: "/reports" },
   ];
 
   return (

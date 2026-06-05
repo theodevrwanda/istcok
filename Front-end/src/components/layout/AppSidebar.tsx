@@ -1,4 +1,4 @@
-import { LayoutDashboard, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { LayoutDashboard, ArrowUpRight, ArrowDownRight, BarChart3 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { InstallPWA } from "../InstallPWA";
@@ -16,6 +16,7 @@ const navItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Stock In", url: "/stock-in", icon: ArrowUpRight },
   { title: "Stock Out", url: "/stock-out", icon: ArrowDownRight },
+  { title: "Reports", url: "/reports", icon: BarChart3 },
 ];
 
 const AppSidebar = () => {
