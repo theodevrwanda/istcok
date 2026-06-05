@@ -111,7 +111,6 @@ const Login = () => {
           </div>
           <div>
             <h1 className="text-2xl font-black text-foreground tracking-tight">Stock Management System</h1>
-            <p className="text-xs text-muted-foreground mt-1">SMS Full Database Integration</p>
           </div>
         </div>
 
