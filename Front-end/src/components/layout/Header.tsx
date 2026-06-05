@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStockMovements } from "@/contexts/StockMovementContext";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 interface HeaderProps {
   onLogout?: () => void;
@@ -62,7 +63,8 @@ const Header = ({ onLogout }: HeaderProps) => {
     <>
       <header className="h-14 border-b border-border flex items-center justify-between px-4 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/75 sticky top-0 z-50">
         {/* Left Section: Logo & Brand */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
+          <SidebarTrigger className="h-8 w-8 text-muted-foreground hover:text-foreground hidden md:inline-flex" />
           <div className="flex items-center gap-2">
             <img 
               src="/sms-logo.png" 
