@@ -583,11 +583,11 @@ const Reports = () => {
               <thead>
                 <tr className="border-b border-border bg-muted/20 text-muted-foreground whitespace-nowrap">
                   {/* Sticky ITEM Column Header */}
-                  <th className="sticky left-0 top-0 bg-background/95 backdrop-blur z-30 border-b border-r border-border font-bold p-3 text-left uppercase tracking-wider text-[10px] min-w-[150px] max-w-[200px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                  <th className={`sticky left-0 ${isFullscreen ? "top-0" : "top-14"} bg-background/95 backdrop-blur z-30 border-b border-r border-border font-bold p-3 text-left uppercase tracking-wider text-[10px] min-w-[150px] max-w-[200px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]`}>
                     ITEM
                   </th>
                   {colHeaders.map((header) => (
-                    <th key={header.index} className="sticky top-0 bg-background/95 backdrop-blur z-20 p-3 border-b border-r border-border text-center font-bold text-[10px] min-w-[85px] last:border-r-0">
+                    <th key={header.index} className={`sticky ${isFullscreen ? "top-0" : "top-14"} bg-background/95 backdrop-blur z-20 p-3 border-b border-r border-border text-center font-bold text-[10px] min-w-[85px] last:border-r-0`}>
                       <div>{header.title}</div>
                       {header.subtitle && (
                         <div className="text-[8px] font-medium text-muted-foreground mt-0.5">{header.subtitle}</div>
@@ -683,14 +683,14 @@ const Reports = () => {
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-border text-muted-foreground bg-muted/20 whitespace-nowrap print:bg-gray-100 print:text-black">
-                <th className="sticky top-0 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">ID</th>
-                <th className="sticky top-0 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Item</th>
-                <th className="sticky top-0 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Type</th>
-                <th className="sticky top-0 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Qty</th>
-                <th className="sticky top-0 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Remaining</th>
-                <th className="sticky top-0 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Operator</th>
-                <th className="sticky top-0 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Date</th>
-                <th className="sticky top-0 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Details</th>
+                <th className="sticky top-14 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">ID</th>
+                <th className="sticky top-14 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Item</th>
+                <th className="sticky top-14 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Type</th>
+                <th className="sticky top-14 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Qty</th>
+                <th className="sticky top-14 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Remaining</th>
+                <th className="sticky top-14 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Operator</th>
+                <th className="sticky top-14 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Date</th>
+                <th className="sticky top-14 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Details</th>
               </tr>
             </thead>
             <tbody>
