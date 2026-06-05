@@ -414,13 +414,13 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-lg overflow-x-auto shadow-sm">
+      <div className="bg-card border border-border rounded-lg overflow-x-auto md:overflow-x-visible shadow-sm">
         {mode === "in" ? (
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-border text-muted-foreground bg-muted/20 whitespace-nowrap">
                 {["BATCH ID", "ITEM NAME", "INITIAL QTY", "IN STOCK", "RECORDER", "SUPPLIER", "DATE", "ACTIONS"].map((h) => (
-                  <th key={h} className="text-left p-3 font-medium uppercase tracking-tight">{h}</th>
+                  <th key={h} className="sticky top-0 bg-card/95 backdrop-blur z-10 text-left p-3 font-medium uppercase tracking-tight border-b border-border">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -515,7 +515,7 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
             <thead>
               <tr className="border-b border-border text-muted-foreground bg-muted/20 whitespace-nowrap">
                 {["OUT ID", "ITEM NAME", "QTY OUT", "REMAINING BATCH STOCK", "RECORDER", "DATE", "REF BATCH", "ACTIONS"].map((h) => (
-                  <th key={h} className="text-left p-3 font-medium uppercase tracking-tight">{h}</th>
+                  <th key={h} className="sticky top-0 bg-card/95 backdrop-blur z-10 text-left p-3 font-medium uppercase tracking-tight border-b border-border">{h}</th>
                 ))}
               </tr>
             </thead>

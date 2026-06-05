@@ -578,7 +578,7 @@ const Reports = () => {
           </div>
         </CardHeader>
         <CardContent className={isFullscreen ? "p-0 flex-1 overflow-hidden flex flex-col mt-4" : "p-0"}>
-          <div className={isFullscreen ? "overflow-auto w-full flex-1" : "overflow-x-auto w-full max-h-[400px]"}>
+          <div className={isFullscreen ? "overflow-auto w-full flex-1" : "overflow-x-auto md:overflow-x-visible w-full"}>
             <table className="w-full text-xs border-collapse">
               <thead>
                 <tr className="border-b border-border bg-muted/20 text-muted-foreground whitespace-nowrap">
@@ -679,18 +679,18 @@ const Reports = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto md:overflow-x-visible w-full">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-border text-muted-foreground bg-muted/20 whitespace-nowrap print:bg-gray-100 print:text-black">
-                <th className="text-left p-3 font-semibold uppercase">ID</th>
-                <th className="text-left p-3 font-semibold uppercase">Item</th>
-                <th className="text-left p-3 font-semibold uppercase">Type</th>
-                <th className="text-left p-3 font-semibold uppercase">Qty</th>
-                <th className="text-left p-3 font-semibold uppercase">Remaining</th>
-                <th className="text-left p-3 font-semibold uppercase">Operator</th>
-                <th className="text-left p-3 font-semibold uppercase">Date</th>
-                <th className="text-left p-3 font-semibold uppercase">Details</th>
+                <th className="sticky top-0 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">ID</th>
+                <th className="sticky top-0 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Item</th>
+                <th className="sticky top-0 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Type</th>
+                <th className="sticky top-0 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Qty</th>
+                <th className="sticky top-0 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Remaining</th>
+                <th className="sticky top-0 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Operator</th>
+                <th className="sticky top-0 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Date</th>
+                <th className="sticky top-0 bg-card/95 backdrop-blur z-10 text-left p-3 font-semibold uppercase border-b border-border">Details</th>
               </tr>
             </thead>
             <tbody>
