@@ -76,11 +76,6 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
     supplierName: "",
     stockDate: "",
   });
-  const [editOutForm, setEditOutForm] = useState({
-    stock_id_fk: "",
-    quantityout: 1,
-    stockoutDate: "",
-  });
 
   // View movement detail state
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
@@ -89,45 +84,22 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
-    if (!editingItem) return;
+    if (!editingItem || mode !== "in") return;
 
     setSubmitting(true);
     try {
-      if (mode === "in") {
-        if (!editInForm.ItemName.trim() || !editInForm.supplierName.trim() || !editInForm.stockDate) {
-          setErrorMsg("Please fill in all required fields.");
-          setSubmitting(false);
-          return;
-        }
-        await updateStockIn(editingItem.stock_id, {
-          ItemName: editInForm.ItemName.trim(),
-          Description: editInForm.Description.trim(),
-          quantityin: Number(editInForm.quantityin),
-          supplierName: editInForm.supplierName.trim(),
-          stockDate: editInForm.stockDate,
-        });
-      } else {
-        if (!editOutForm.stock_id_fk || !editOutForm.stockoutDate) {
-          setErrorMsg("Please select a target Stock In batch.");
-          setSubmitting(false);
-          return;
-        }
-        const selectedBatch = stockInList.find(b => b.stock_id === Number(editOutForm.stock_id_fk));
-        const originalQty = editingItem.quantityout;
-        const effectiveAvailable = (selectedBatch?.totalquantityin || 0) + (editingItem.stock_id_fk === Number(editOutForm.stock_id_fk) ? originalQty : 0);
-        
-        if (Number(editOutForm.quantityout) > effectiveAvailable) {
-          setErrorMsg(`Insufficient stock. Only ${effectiveAvailable} units available in this batch.`);
-          setSubmitting(false);
-          return;
-        }
-
-        await updateStockOut(editingItem.stock_id, {
-          stock_id_fk: Number(editOutForm.stock_id_fk),
-          quantityout: Number(editOutForm.quantityout),
-          stockoutDate: editOutForm.stockoutDate,
-        });
+      if (!editInForm.ItemName.trim() || !editInForm.supplierName.trim() || !editInForm.stockDate) {
+        setErrorMsg("Please fill in all required fields.");
+        setSubmitting(false);
+        return;
       }
+      await updateStockIn(editingItem.stock_id, {
+        ItemName: editInForm.ItemName.trim(),
+        Description: editInForm.Description.trim(),
+        quantityin: Number(editInForm.quantityin),
+        supplierName: editInForm.supplierName.trim(),
+        stockDate: editInForm.stockDate,
+      });
       setIsEditDialogOpen(false);
       setEditingItem(null);
     } catch (err: any) {
@@ -593,23 +565,6 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          onClick={() => {
-                            setEditingItem(m);
-                            setEditOutForm({
-                              stock_id_fk: String(m.stock_id_fk),
-                              quantityout: m.quantityout,
-                              stockoutDate: m.stockoutDate.split("T")[0]
-                            });
-                            setIsEditDialogOpen(true);
-                          }}
-                          className="h-7 w-7 text-primary hover:bg-muted"
-                          title="Edit"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
                           onClick={() => setDeleteConfirmId(m.stock_id)}
                           className="h-7 w-7 text-destructive hover:bg-muted"
                           title="Delete"
@@ -710,20 +665,20 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
       </Dialog>
 
       {/* Edit Details Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={(open) => { setIsEditDialogOpen(open); if(!open) { setEditingItem(null); setErrorMsg(""); } }}>
-        <DialogContent className="sm:max-w-md text-xs">
-          <DialogHeader>
-            <DialogTitle className="text-sm font-bold">Edit {mode === "in" ? "Stock In Receipt" : "Stock Out Issue"}</DialogTitle>
-          </DialogHeader>
+      {mode === "in" && (
+        <Dialog open={isEditDialogOpen} onOpenChange={(open) => { setIsEditDialogOpen(open); if(!open) { setEditingItem(null); setErrorMsg(""); } }}>
+          <DialogContent className="sm:max-w-md text-xs">
+            <DialogHeader>
+              <DialogTitle className="text-sm font-bold">Edit Stock In Receipt</DialogTitle>
+            </DialogHeader>
 
-          {errorMsg && (
-            <div className="text-xs font-semibold text-destructive bg-destructive/5 border border-destructive/10 rounded-md p-3 text-center">
-              {errorMsg}
-            </div>
-          )}
+            {errorMsg && (
+              <div className="text-xs font-semibold text-destructive bg-destructive/5 border border-destructive/10 rounded-md p-3 text-center">
+                {errorMsg}
+              </div>
+            )}
 
-          {editingItem && (
-            mode === "in" ? (
+            {editingItem && (
               <form onSubmit={handleEditSubmit} className="space-y-4 pt-2">
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold">Item Name *</Label>
@@ -780,59 +735,10 @@ const StockMovements = ({ mode }: { mode: "in" | "out" }) => {
                   Update Stock In Record
                 </Button>
               </form>
-            ) : (
-              <form onSubmit={handleEditSubmit} className="space-y-4 pt-2">
-                <div className="space-y-2">
-                  <Label className="text-xs font-semibold">Select Stock In Batch *</Label>
-                  <Select 
-                    value={editOutForm.stock_id_fk} 
-                    onValueChange={(val) => setEditOutForm({...editOutForm, stock_id_fk: val})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose batch item..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {stockInList.map((b) => (
-                        <SelectItem key={b.stock_id} value={String(b.stock_id)}>
-                          #{b.stock_id} - {b.ItemName} (Avail: {b.totalquantityin})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold">Quantity Out *</Label>
-                    <Input 
-                      type="number" 
-                      min={1} 
-                      value={editOutForm.quantityout} 
-                      onChange={(e) => setEditOutForm({...editOutForm, quantityout: Math.max(1, parseInt(e.target.value) || 1)})}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold">Stock Out Date *</Label>
-                    <Input 
-                      type="date" 
-                      value={editOutForm.stockoutDate} 
-                      onChange={(e) => setEditOutForm({...editOutForm, stockoutDate: e.target.value})}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <Button type="submit" disabled={submitting} className="w-full">
-                  {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Update Stock Out Record
-                </Button>
-              </form>
-            )
-          )}
-        </DialogContent>
-      </Dialog>
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteConfirmId !== null} onOpenChange={(open) => !open && !isDeleting && setDeleteConfirmId(null)}>
