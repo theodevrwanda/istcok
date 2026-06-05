@@ -61,7 +61,7 @@ const Header = ({ onLogout }: HeaderProps) => {
 
   return (
     <>
-      <header className="h-14 border-b border-border flex items-center justify-between px-4 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/75 sticky top-0 z-50">
+      <header className="h-14 border-b border-indigo-500/10 flex items-center justify-between px-4 bg-background/80 backdrop-blur-md sticky top-0 z-50 shadow-[0_2px_15px_rgba(99,102,241,0.03)]">
         {/* Left Section: Logo & Brand */}
         <div className="flex items-center gap-2 shrink-0">
           <SidebarTrigger className="h-8 w-8 text-muted-foreground hover:text-foreground hidden md:inline-flex" />
@@ -69,10 +69,10 @@ const Header = ({ onLogout }: HeaderProps) => {
             <img 
               src="/sms-logo.png" 
               alt="SMS Logo" 
-              className="h-8 w-8 rounded-lg border border-border shadow-sm object-cover" 
+              className="h-8 w-8 rounded-lg border border-indigo-500/15 shadow-sm object-cover" 
             />
-            <span className="font-bold text-sm text-foreground uppercase tracking-tight hidden xs:inline">
-              SMS <span className="text-primary opacity-80">Dashboard</span>
+            <span className="font-black text-sm text-foreground uppercase tracking-tight hidden xs:inline">
+              SMS <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-violet-500 font-black">Control</span>
             </span>
           </div>
         </div>
@@ -80,7 +80,7 @@ const Header = ({ onLogout }: HeaderProps) => {
         {/* Middle Section: Global Search Input */}
         <div ref={containerRef} className="relative flex-1 max-w-sm sm:max-w-md mx-4 sm:mx-6">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <input
               type="text"
               value={searchQuery}
@@ -90,7 +90,7 @@ const Header = ({ onLogout }: HeaderProps) => {
               }}
               onFocus={() => setIsFocused(true)}
               placeholder="Search items, suppliers, batch IDs..."
-              className="w-full h-9 pl-9 pr-8 bg-muted/40 hover:bg-muted/65 focus:bg-background text-xs font-semibold text-foreground rounded-xl border border-border focus:border-primary/40 focus:ring-2 focus:ring-primary/10 focus:outline-none transition-all duration-300"
+              className="w-full h-9 pl-10 pr-8 bg-indigo-50/30 dark:bg-indigo-950/20 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/35 focus:bg-background text-xs font-semibold text-foreground rounded-full border border-indigo-500/10 focus:border-indigo-500/35 focus:ring-4 focus:ring-indigo-500/5 focus:outline-none transition-all duration-300"
             />
             {searchQuery && (
               <button 
@@ -188,9 +188,15 @@ const Header = ({ onLogout }: HeaderProps) => {
         <div className="flex items-center gap-2 shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="h-8 w-8 rounded-full bg-primary text-primary-foreground text-xs font-black p-0 shadow-sm border border-primary/20 hover:scale-105 transition-transform duration-200">
-                {(profile?.user_name?.charAt(0) || "U").toUpperCase()}
-              </Button>
+              <button className="flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-indigo-50/40 dark:bg-indigo-950/20 border border-indigo-500/10 hover:bg-indigo-50/70 dark:hover:bg-indigo-950/45 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest hidden xs:inline max-w-[80px] truncate">
+                  {profile?.user_name || "Operator"}
+                </span>
+                <div className="h-5 w-5 rounded-full bg-indigo-500 text-white text-[10px] font-black flex items-center justify-center shrink-0">
+                  {(profile?.user_name?.charAt(0) || "U").toUpperCase()}
+                </div>
+              </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40 rounded-xl">
               <div className="px-2.5 py-1.5 border-b border-border mb-1">

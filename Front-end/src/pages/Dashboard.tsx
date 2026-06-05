@@ -86,28 +86,32 @@ const Dashboard = () => {
       value: stats?.currentBalance ?? 0, 
       icon: Package, 
       desc: "Net units currently in stock", 
-      color: "text-foreground bg-slate-100 border-slate-200" 
+      borderClass: "border-l-4 border-l-slate-900 dark:border-l-slate-100",
+      color: "text-foreground bg-muted/60 border-border" 
     },
     { 
       label: "Total Items Received (Stock In)", 
       value: stats?.totalIn ?? 0, 
       icon: ArrowUpRight, 
       desc: "Cumulative incoming items", 
-      color: "text-teal-650 bg-teal-50 border-teal-200/80" 
+      borderClass: "border-l-4 border-l-slate-600 dark:border-l-slate-400",
+      color: "text-foreground bg-muted/60 border-border" 
     },
     { 
       label: "Total Items Issued (Stock Out)", 
       value: stats?.totalOut ?? 0, 
       icon: ArrowDownRight, 
       desc: "Cumulative outgoing items", 
-      color: "text-rose-650 bg-rose-50 border-rose-200/80" 
+      borderClass: "border-l-4 border-l-slate-400 dark:border-l-slate-600",
+      color: "text-foreground bg-muted/60 border-border" 
     },
     { 
       label: "Registered Personnel", 
       value: stats?.totalUsers ?? 0, 
       icon: Users, 
       desc: "System authorized staff", 
-      color: "text-indigo-650 bg-indigo-50 border-indigo-200/80" 
+      borderClass: "border-l-4 border-l-slate-300 dark:border-l-slate-700",
+      color: "text-foreground bg-muted/60 border-border" 
     },
   ];
 
@@ -115,13 +119,13 @@ const Dashboard = () => {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xl space-y-1.5">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
+        <div className="bg-card border border-border rounded-2xl p-4 shadow-xl space-y-1.5 backdrop-blur-md">
+          <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">{label}</p>
           {payload.map((p: any) => (
             <div key={p.name} className="flex items-center gap-2.5 text-xs">
               <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: p.stroke || p.color }} />
-              <span className="font-semibold text-slate-600">{p.name}:</span>
-              <span className="font-black text-slate-800">{p.value} units</span>
+              <span className="font-semibold text-foreground">{p.name}:</span>
+              <span className="font-black text-foreground">{p.value} units</span>
             </div>
           ))}
         </div>
@@ -133,150 +137,169 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       {/* Welcome banner */}
-      <div className="bg-gradient-to-r from-teal-500/10 via-cyan-500/5 to-transparent border border-teal-500/20 rounded-2xl p-5 flex items-center justify-between shadow-sm animate-in fade-in duration-500">
-        <div className="space-y-1">
-          <h2 className="text-base font-black text-slate-800">Welcome back, {user?.user_name}!</h2>
-          <p className="text-xs text-slate-500 font-medium">You are currently monitoring the SMS Database.</p>
+      <div className="relative overflow-hidden bg-muted/30 border border-border/80 rounded-2xl p-6 shadow-sm animate-in fade-in duration-500">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-foreground/5 rounded-full blur-2xl" />
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="space-y-1">
+            <h2 className="text-base font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+              Welcome back, <span className="text-primary font-black underline underline-offset-4 decoration-border/60">{user?.user_name}</span>!
+            </h2>
+            <p className="text-xs text-muted-foreground font-semibold">
+              You are currently monitoring the active inventory database. Everything is synced.
+            </p>
+          </div>
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-foreground/5 border border-border/80">
+            <div className="w-1.5 h-1.5 rounded-full bg-foreground animate-pulse" />
+            <span className="text-[9px] font-black text-foreground uppercase tracking-widest">
+              Live Synced
+            </span>
+          </div>
         </div>
       </div>
 
       <div>
-        <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Dashboard Overview</h1>
-        <p className="text-xs text-slate-500 font-medium mt-0.5">Real-time status of items, entries, and system transactions.</p>
+        <h1 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Dashboard Overview</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Real-time status of items, entries, and system transactions.</p>
       </div>
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((s) => (
-          <div key={s.label} className="bg-card border border-border rounded-2xl p-5 flex flex-col justify-between hover:shadow-md hover:scale-[1.01] transition-all duration-300">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{s.label}</span>
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${s.color}`}>
-                <s.icon className="h-4.5 w-4.5" />
+          <div key={s.label} className={`bg-card border-t border-r border-b border-border ${s.borderClass} rounded-r-2xl rounded-l-md p-5 flex flex-col justify-between hover:shadow-lg hover:translate-y-[-2px] transition-all duration-300 relative overflow-hidden group`}>
+            {/* Soft background glow */}
+            <div className="absolute -top-12 -right-12 w-24 h-24 bg-foreground/5 group-hover:bg-foreground/10 rounded-full blur-xl transition-all duration-300" />
+            
+            <div className="flex items-start justify-between relative z-10">
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/85">{s.label}</span>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center border shadow-sm ${s.color} shrink-0`}>
+                <s.icon className="h-4 w-4" />
               </div>
             </div>
-            <div className="mt-5 space-y-1">
-              <div className="text-3xl font-black text-foreground">{(s.value || 0).toLocaleString()}</div>
-              <div className="text-[10px] text-muted-foreground font-semibold">{s.desc}</div>
+            <div className="mt-5 space-y-1.5 relative z-10">
+              <div className="text-2xl font-black tracking-tight text-foreground">{(s.value || 0).toLocaleString()}</div>
+              <div className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">{s.desc}</div>
             </div>
           </div>
         ))}
       </div>
 
       {/* Chart Section */}
-      <Card className="border border-slate-200/80 shadow-sm bg-white rounded-2xl overflow-hidden">
+      <Card className="border border-border/80 shadow-sm bg-card rounded-2xl overflow-hidden">
         <CardHeader className="p-5 pb-0">
-          <CardTitle className="text-[10px] font-black uppercase tracking-widest text-slate-400">Weekly Stock Movement Trend</CardTitle>
+          <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Weekly Stock Movement Trend</CardTitle>
         </CardHeader>
         <CardContent className="h-72 p-5">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorIn" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#0d9488" stopOpacity={0.25}/>
-                  <stop offset="95%" stopColor="#0d9488" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#4b5563" stopOpacity={0.15}/>
+                  <stop offset="95%" stopColor="#4b5563" stopOpacity={0}/>
                 </linearGradient>
                 <linearGradient id="colorOut" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.25}/>
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#9ca3af" stopOpacity={0.15}/>
+                  <stop offset="95%" stopColor="#9ca3af" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.06} />
-              <XAxis dataKey="date" className="text-[10px] fill-slate-400 font-bold" tickLine={false} axisLine={false} dy={8} />
-              <YAxis className="text-[10px] fill-slate-400 font-bold" tickLine={false} axisLine={false} dx={-8} />
-              <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }} />
-              <Area type="monotone" dataKey="incoming" name="Stock In (+)" stroke="#0d9488" fillOpacity={1} fill="url(#colorIn)" strokeWidth={2.5} />
-              <Area type="monotone" dataKey="outgoing" name="Stock Out (-)" stroke="#ef4444" fillOpacity={1} fill="url(#colorOut)" strokeWidth={2.5} />
+              <XAxis dataKey="date" className="text-[10px] fill-muted-foreground font-bold" tickLine={false} axisLine={false} dy={8} />
+              <YAxis className="text-[10px] fill-muted-foreground font-bold" tickLine={false} axisLine={false} dx={-8} />
+              <Tooltip content={<CustomTooltip />} cursor={{ stroke: "rgba(0, 0, 0, 0.08)", strokeWidth: 1 }} />
+              <Area type="monotone" dataKey="incoming" name="Stock In (+)" stroke="#4b5563" fillOpacity={1} fill="url(#colorIn)" strokeWidth={2.5} />
+              <Area type="monotone" dataKey="outgoing" name="Stock Out (-)" stroke="#9ca3af" fillOpacity={1} fill="url(#colorOut)" strokeWidth={2.5} />
             </AreaChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
       {/* Recent Ledger Log (Timeline Feed Layout) */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/50">
+      <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between p-5 border-b border-border bg-muted/30">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
+            <div className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-foreground shadow-sm">
               <Clock className="h-4.5 w-4.5" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-800">Recent Transactions Log</h2>
-              <p className="text-[10px] text-slate-500 font-medium">Real-time ledger updates from the database.</p>
+              <h2 className="text-sm font-black text-foreground">Recent Transactions Log</h2>
+              <p className="text-[10px] text-muted-foreground font-semibold">Real-time ledger updates from database.</p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest">Live database synced</span>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted border border-border">
+            <div className="w-1.5 h-1.5 rounded-full bg-foreground animate-pulse" />
+            <span className="text-[9px] font-black text-foreground uppercase tracking-widest">Live Sync</span>
           </div>
         </div>
 
-        <div className="divide-y divide-slate-100">
-          {stats?.recentMovements && stats.recentMovements.length > 0 ? (
-            stats.recentMovements.map((m: any, idx: number) => {
-              const isIn = m.type === "in";
-              return (
-                <div 
-                  key={idx} 
-                  className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/40 hover:translate-x-[2px] transition-all duration-300"
-                >
-                  {/* Left: Direction Icon & Info */}
-                  <div className="flex items-center gap-3.5">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
-                      isIn 
-                        ? "bg-emerald-50 border-emerald-100/80 text-emerald-600" 
-                        : "bg-rose-50 border-rose-100/80 text-rose-600"
-                    }`}>
-                      {isIn ? <ArrowUpRight className="h-5 w-5" /> : <ArrowDownRight className="h-5 w-5" />}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-slate-800 text-sm tracking-tight">{m.name}</span>
-                        <span className="text-[9px] font-mono font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
-                          #{m.id}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5 text-slate-500 text-[10px] font-medium">
-                        <span>Recorded by <span className="font-semibold text-slate-700">{m.recorder || "System"}</span></span>
-                        <span>•</span>
-                        <span>
-                          {new Date(m.date).toLocaleDateString(undefined, {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit"
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right: Type Badge & Quantity */}
-                  <div className="flex items-center justify-between sm:justify-end gap-5 border-t sm:border-0 pt-2 sm:pt-0 border-slate-100">
-                    <span className={`text-[9px] px-2.5 py-1 rounded-full font-black uppercase tracking-widest ${
-                      isIn 
-                        ? "bg-emerald-100/60 text-emerald-700" 
-                        : "bg-rose-100/60 text-rose-700"
-                    }`}>
-                      {isIn ? "Stock In" : "Stock Out"}
-                    </span>
-                    <div className="text-right min-w-[70px]">
-                      <span className={`text-base font-black tracking-tight ${
-                        isIn ? "text-emerald-600" : "text-rose-600"
-                      }`}>
-                        {isIn ? "+" : "-"}{m.quantity}
-                      </span>
-                      <span className="text-[9px] text-slate-400 block -mt-0.5 font-bold uppercase tracking-wider">units</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          ) : (
-            <div className="p-8 text-center text-slate-400 italic text-xs font-semibold">
-              No transactions recorded yet.
-            </div>
+        <div className="p-6 relative">
+          {/* Vertical connecting line */}
+          {stats?.recentMovements && stats.recentMovements.length > 1 && (
+            <div className="absolute left-[28px] top-[40px] bottom-[40px] w-0.5 bg-gradient-to-b from-foreground/20 via-foreground/10 to-transparent" />
           )}
+
+          <div className="space-y-6">
+            {stats?.recentMovements && stats.recentMovements.length > 0 ? (
+              stats.recentMovements.map((m: any, idx: number) => {
+                const isIn = m.type === "in";
+                return (
+                  <div 
+                    key={idx} 
+                    className="flex items-start gap-4 relative group"
+                  >
+                    {/* Circle wrapper with icon */}
+                    <div className={`w-[24px] h-[24px] rounded-full flex items-center justify-center shrink-0 border z-10 transition-all duration-300 group-hover:scale-110 shadow-sm ${
+                      isIn 
+                        ? "bg-muted border-border text-foreground" 
+                        : "bg-muted border-border text-muted-foreground"
+                    }`}>
+                      {isIn ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                    </div>
+
+                    {/* Transaction Details Content */}
+                    <div className="flex-1 min-w-0 bg-muted/10 dark:bg-muted/5 border border-border/40 hover:border-foreground/20 p-3.5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all duration-300 hover:shadow-md hover:bg-muted/20">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-extrabold text-foreground text-xs uppercase tracking-tight">{m.name}</span>
+                          <span className="text-[9px] font-mono font-bold text-muted-foreground bg-background px-1.5 py-0.5 rounded-full border border-border/50">
+                            #{m.id}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1 text-muted-foreground text-[10px] font-semibold">
+                          <span>By <span className="font-extrabold text-foreground">{m.recorder || "System"}</span></span>
+                          <span>•</span>
+                          <span>
+                            {new Date(m.date).toLocaleDateString(undefined, {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Quantity & Type */}
+                      <div className="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-0 pt-2 sm:pt-0 border-border/40 shrink-0">
+                        <span className="text-[9px] px-2.5 py-1 rounded-full font-black uppercase tracking-widest bg-muted border border-border/60 text-foreground">
+                          {isIn ? "Stock In" : "Stock Out"}
+                        </span>
+                        <div className="text-right min-w-[70px]">
+                          <span className="text-base font-black tracking-tight text-foreground">
+                            {isIn ? "+" : "-"}{m.quantity}
+                          </span>
+                          <span className="text-[9px] text-muted-foreground block -mt-1 font-bold uppercase tracking-widest">units</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="p-8 text-center text-muted-foreground italic text-xs font-semibold">
+                No transactions recorded yet.
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
