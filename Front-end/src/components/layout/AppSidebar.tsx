@@ -12,13 +12,12 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const mainNavItems = [
+const navItems = [
+  { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Stock In", url: "/stock-in", icon: ArrowUpRight },
   { title: "Stock Out", url: "/stock-out", icon: ArrowDownRight },
   { title: "Reports", url: "/reports", icon: BarChart3 },
 ];
-
-const dashboardItem = { title: "Dashboard", url: "/", icon: LayoutDashboard };
 
 const AppSidebar = () => {
   const { state } = useSidebar();
@@ -27,10 +26,10 @@ const AppSidebar = () => {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarContent className="pt-4 flex flex-col justify-between h-full">
-        {/* Main top navigation */}
-        <SidebarMenu>
-          {mainNavItems.map((item) => {
+      <SidebarContent className="flex flex-col justify-end h-full pb-5">
+        {/* All nav links pushed to the bottom of the sidebar */}
+        <SidebarMenu className="mt-auto">
+          {navItems.map((item) => {
             const active = location.pathname === item.url;
             return (
               <SidebarMenuItem key={item.title}>
@@ -56,31 +55,6 @@ const AppSidebar = () => {
               </SidebarMenuItem>
             );
           })}
-        </SidebarMenu>
-
-        {/* Dashboard pushed to bottom (at least 20px margin-top) */}
-        <SidebarMenu className="mt-auto pt-6 pb-2 border-t border-sidebar-border/20">
-          <SidebarMenuItem key={dashboardItem.title}>
-            <SidebarMenuButton asChild tooltip={dashboardItem.title}>
-              <NavLink
-                to={dashboardItem.url}
-                end
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mx-2 transition-colors text-sm relative ${
-                  location.pathname === dashboardItem.url
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground font-bold"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground font-medium"
-                }`}
-                activeClassName=""
-              >
-                <dashboardItem.icon className="h-5 w-5 shrink-0" />
-                {!collapsed && (
-                  <div className="flex items-center justify-between flex-1">
-                    <span>{dashboardItem.title}</span>
-                  </div>
-                )}
-              </NavLink>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="p-4 border-t border-sidebar-border">
