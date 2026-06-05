@@ -86,44 +86,28 @@ const Dashboard = () => {
       value: stats?.currentBalance ?? 0, 
       icon: Package, 
       desc: "Net units currently in stock", 
-      bgClass: "bg-slate-950 text-white border-slate-900 shadow-xl shadow-slate-950/20",
-      iconClass: "bg-white/10 border border-white/20 text-teal-400",
-      labelClass: "text-slate-400",
-      descClass: "text-slate-400",
-      valueClass: "text-white"
+      color: "text-foreground bg-slate-100 border-slate-200" 
     },
     { 
       label: "Total Items Received (Stock In)", 
       value: stats?.totalIn ?? 0, 
       icon: ArrowUpRight, 
       desc: "Cumulative incoming items", 
-      bgClass: "bg-gradient-to-br from-teal-600 to-emerald-600 text-white border-teal-500 shadow-xl shadow-teal-600/15",
-      iconClass: "bg-white/15 border border-white/25 text-white",
-      labelClass: "text-teal-100/90",
-      descClass: "text-teal-100/70",
-      valueClass: "text-white"
+      color: "text-teal-650 bg-teal-50 border-teal-200/80" 
     },
     { 
       label: "Total Items Issued (Stock Out)", 
       value: stats?.totalOut ?? 0, 
       icon: ArrowDownRight, 
       desc: "Cumulative outgoing items", 
-      bgClass: "bg-gradient-to-br from-rose-600 to-red-700 text-white border-rose-500 shadow-xl shadow-rose-600/15",
-      iconClass: "bg-white/15 border border-white/25 text-white",
-      labelClass: "text-rose-100/90",
-      descClass: "text-rose-100/70",
-      valueClass: "text-white"
+      color: "text-rose-650 bg-rose-50 border-rose-200/80" 
     },
     { 
       label: "Registered Personnel", 
       value: stats?.totalUsers ?? 0, 
       icon: Users, 
       desc: "System authorized staff", 
-      bgClass: "bg-gradient-to-br from-indigo-600 to-violet-700 text-white border-indigo-500 shadow-xl shadow-indigo-600/15",
-      iconClass: "bg-white/15 border border-white/25 text-white",
-      labelClass: "text-indigo-100/90",
-      descClass: "text-indigo-100/70",
-      valueClass: "text-white"
+      color: "text-indigo-650 bg-indigo-50 border-indigo-200/80" 
     },
   ];
 
@@ -164,16 +148,16 @@ const Dashboard = () => {
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((s) => (
-          <div key={s.label} className={`border rounded-2xl p-5 flex flex-col justify-between hover:scale-[1.01] hover:shadow-2xl transition-all duration-300 ${s.bgClass}`}>
+          <div key={s.label} className="bg-card border border-border rounded-2xl p-5 flex flex-col justify-between hover:shadow-md hover:scale-[1.01] transition-all duration-300">
             <div className="flex items-center justify-between">
-              <span className={`text-[10px] font-black uppercase tracking-widest ${s.labelClass}`}>{s.label}</span>
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${s.iconClass}`}>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{s.label}</span>
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${s.color}`}>
                 <s.icon className="h-4.5 w-4.5" />
               </div>
             </div>
             <div className="mt-5 space-y-1">
-              <div className={`text-3xl font-black ${s.valueClass}`}>{(s.value || 0).toLocaleString()}</div>
-              <div className={`text-[10px] font-semibold ${s.descClass}`}>{s.desc}</div>
+              <div className="text-3xl font-black text-foreground">{(s.value || 0).toLocaleString()}</div>
+              <div className="text-[10px] text-muted-foreground font-semibold">{s.desc}</div>
             </div>
           </div>
         ))}
