@@ -5,16 +5,16 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Lock, User, Loader2, Sun, Moon, Package, BarChart3, ClipboardCheck, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
 
 const Login = () => {
   const { theme, toggleTheme } = useTheme();
+  const { toast } = useToast();
   const [view, setView] = useState<"login" | "register" | "forgot">("login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const { login, register } = useAuth();
@@ -26,21 +26,19 @@ const Login = () => {
 
   const handleRegisterSubmit = async () => {
     if (!username || !password) {
-      setError("Please fill in all fields");
+      toast({ title: "Missing fields", description: "Please fill in all fields.", variant: "destructive" });
       return;
     }
     
     setIsLoggingIn(true);
-    setError("");
-    setSuccess("");
     
     try {
       await register(username.trim(), password);
-      setSuccess("Registration successful! Please sign in.");
+      toast({ title: "Registration Successful!", description: "Please sign in to your new account." });
       setView("login");
       setPassword("");
     } catch (err: any) {
-      setError(err.message || "Registration failed. Try a different username.");
+      toast({ title: "Registration Failed", description: err.message || "Registration failed. Try a different username.", variant: "destructive" });
     } finally {
       setIsLoggingIn(false);
     }
@@ -58,19 +56,17 @@ const Login = () => {
     }
 
     if (!username || !password) {
-      setError("Please fill in all fields");
+      toast({ title: "Missing fields", description: "Please fill in all fields.", variant: "destructive" });
       return;
     }
     
     setIsLoggingIn(true);
-    setError("");
-    setSuccess("");
 
     try {
       await login(username.trim(), password);
-      setSuccess("Login successful!");
+      toast({ title: "Login Successful", description: "Welcome back to SMS!" });
     } catch (err: any) {
-      setError(err.message || "Invalid username or password.");
+      toast({ title: "Login Failed", description: err.message || "Invalid username or password.", variant: "destructive" });
     } finally {
       setIsLoggingIn(false);
     }
@@ -78,13 +74,11 @@ const Login = () => {
 
   const handleForgotPassword = async () => {
     if (!username) {
-      setError("Please enter your username.");
+      toast({ title: "Required", description: "Please enter your username.", variant: "destructive" });
       return;
     }
 
     setIsResetting(true);
-    setError("");
-    setSuccess("");
 
     try {
       if (!isUserVerified) {
@@ -92,17 +86,17 @@ const Login = () => {
         const res: any = await api.post("/auth/verify-username", { user_name: username.trim() });
         if (res.exists) {
           setIsUserVerified(true);
-          setSuccess("Username verified. Please set your new password below.");
+          toast({ title: "Username Verified", description: "Please set your new password below." });
         }
       } else {
         // Step 2: Reset password
         if (!newPassword || !confirmPassword) {
-          setError("Please enter and confirm your new password.");
+          toast({ title: "Missing fields", description: "Please enter and confirm your new password.", variant: "destructive" });
           setIsResetting(false);
           return;
         }
         if (newPassword !== confirmPassword) {
-          setError("Passwords do not match.");
+          toast({ title: "Mismatch", description: "Passwords do not match.", variant: "destructive" });
           setIsResetting(false);
           return;
         }
@@ -112,18 +106,17 @@ const Login = () => {
           password: newPassword
         });
 
-        setSuccess("Password updated successfully! Redirecting to login...");
+        toast({ title: "Password Updated", description: "Your password has been changed successfully. Redirecting to login..." });
         setTimeout(() => {
           setView("login");
           setIsUserVerified(false);
           setUsername("");
           setNewPassword("");
           setConfirmPassword("");
-          setSuccess("");
         }, 2000);
       }
     } catch (err: any) {
-      setError(err.message || "Failed to process request.");
+      toast({ title: "Request Failed", description: err.message || "Failed to process request.", variant: "destructive" });
     } finally {
       setIsResetting(false);
     }
@@ -269,17 +262,6 @@ const Login = () => {
           </div>
 
           <form onSubmit={handleLoginSubmit} className="bg-card border border-border rounded-xl p-6 space-y-4 shadow-sm">
-            {error && (
-              <div className="text-xs font-semibold text-destructive bg-destructive/5 border border-destructive/10 rounded-lg p-3 text-center animate-in fade-in duration-300">
-                {error}
-              </div>
-            )}
-            {success && (
-              <div className="text-xs font-semibold text-emerald-500 bg-emerald-500/5 border border-emerald-500/10 rounded-lg p-3 text-center animate-in fade-in duration-300">
-                {success}
-              </div>
-            )}
-            
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold">Username</Label>
               <div className="relative">
@@ -287,7 +269,7 @@ const Login = () => {
                 <Input
                   type="text"
                   value={username}
-                  onChange={(e) => { setUsername(e.target.value); setError(""); setSuccess(""); }}
+                  onChange={(e) => setUsername(e.target.value)}
                   placeholder="Enter username"
                   className="h-10 pl-10 text-xs bg-muted/20 rounded-lg"
                   disabled={isLoggingIn || isResetting || (view === "forgot" && isUserVerified)}
@@ -302,7 +284,7 @@ const Login = () => {
                   {view === "login" && (
                     <button 
                       type="button" 
-                      onClick={() => { setView("forgot"); setError(""); setSuccess(""); }}
+                      onClick={() => { setView("forgot"); }}
                       className="text-[10px] font-bold text-primary hover:underline underline-offset-4"
                       disabled={isLoggingIn}
                     >
@@ -315,7 +297,7 @@ const Login = () => {
                   <Input
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(e) => { setPassword(e.target.value); setError(""); setSuccess(""); }}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     className="h-10 pl-10 pr-10 text-xs bg-muted/20 rounded-lg"
                     disabled={isLoggingIn}
@@ -342,7 +324,7 @@ const Login = () => {
                     <Input
                       type={showPassword ? "text" : "password"}
                       value={newPassword}
-                      onChange={(e) => { setNewPassword(e.target.value); setError(""); }}
+                      onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Enter new password"
                       className="h-10 pl-10 pr-10 text-xs bg-muted/20 rounded-lg"
                       disabled={isResetting}
@@ -365,7 +347,7 @@ const Login = () => {
                     <Input
                       type={showPassword ? "text" : "password"}
                       value={confirmPassword}
-                      onChange={(e) => { setConfirmPassword(e.target.value); setError(""); }}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Confirm new password"
                       className="h-10 pl-10 pr-10 text-xs bg-muted/20 rounded-lg"
                       disabled={isResetting}
@@ -401,7 +383,7 @@ const Login = () => {
                     Don't have an account?{" "}
                     <button 
                       type="button" 
-                      onClick={() => { setView("register"); setError(""); setSuccess(""); }}
+                      onClick={() => { setView("register"); }}
                       className="text-primary font-bold hover:underline"
                     >
                       Create Account
@@ -412,8 +394,6 @@ const Login = () => {
                     type="button" 
                     onClick={() => { 
                       setView("login"); 
-                      setError(""); 
-                      setSuccess(""); 
                       setIsUserVerified(false); 
                       setNewPassword(""); 
                       setConfirmPassword(""); 
