@@ -123,7 +123,7 @@ const Login = () => {
         }, 2000);
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to process request.");
+      setError(err.message || "Failed to process request.");
     } finally {
       setIsResetting(false);
     }
