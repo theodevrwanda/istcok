@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { useStockMovements } from "@/contexts/StockMovementContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { FileText, ArrowUpRight, ArrowDownRight, Printer, Download, ListFilter, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -70,45 +69,146 @@ const Reports = () => {
     return combinedLedger.filter(item => item.type === filterType);
   }, [combinedLedger, filterType]);
 
-  // 2. Generate chart data from filtered ledger
-  const chartData = useMemo(() => {
-    const dailyData: Record<string, { date: string; incoming: number; outgoing: number }> = {};
+  // 2. Segmented Matrix Breakdown states and logic
+  const [matrixView, setMatrixView] = useState<"weekly" | "monthly" | "yearly">("monthly");
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
+  
+  const [selectedWeekStart, setSelectedWeekStart] = useState<Date>(() => {
+    const d = new Date();
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(d.getFullYear(), d.getMonth(), diff);
+    monday.setHours(0, 0, 0, 0);
+    return monday;
+  });
 
-    // Determine range from filtered data or default last 7 days
-    if (filteredLedger.length > 0) {
-      // Group by date from filtered ledger
-      filteredLedger.forEach(item => {
-        const dateKey = item.date.split("T")[0];
-        if (!dailyData[dateKey]) {
-          const d = new Date(dateKey);
-          dailyData[dateKey] = {
-            date: d.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
-            incoming: 0,
-            outgoing: 0
-          };
-        }
-        if (item.type === "in") {
-          dailyData[dateKey].incoming += item.quantity;
-        } else {
-          dailyData[dateKey].outgoing += item.quantity;
-        }
+  const formatWeekRange = () => {
+    const end = new Date(selectedWeekStart);
+    end.setDate(selectedWeekStart.getDate() + 6);
+    return `${selectedWeekStart.toLocaleDateString(undefined, { month: "short", day: "numeric" })} – ${end.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
+  };
+
+  const colHeaders = useMemo(() => {
+    if (matrixView === "weekly") {
+      const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+      return weekdays.map((dayName, idx) => {
+        const d = new Date(selectedWeekStart);
+        d.setDate(selectedWeekStart.getDate() + idx);
+        return {
+          title: dayName,
+          subtitle: d.toLocaleDateString(undefined, { month: "numeric", day: "numeric" }),
+          index: idx
+        };
+      });
+    } else if (matrixView === "monthly") {
+      const numDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+      return Array.from({ length: numDays }).map((_, idx) => {
+        return {
+          title: `${idx + 1}`,
+          subtitle: "",
+          index: idx
+        };
       });
     } else {
-      // Fill last 7 days as default when no data
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const dateString = d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-        const sqlDate = d.toISOString().split("T")[0];
-        dailyData[sqlDate] = { date: dateString, incoming: 0, outgoing: 0 };
-      }
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      return months.map((monthName, idx) => {
+        return {
+          title: monthName,
+          subtitle: "",
+          index: idx
+        };
+      });
     }
+  }, [matrixView, selectedWeekStart, selectedMonth, selectedYear]);
 
-    // Sort entries by date ascending for the chart
-    return Object.entries(dailyData)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([, v]) => v);
-  }, [filteredLedger]);
+  const matrixData = useMemo(() => {
+    const itemsSet = new Set<string>();
+    stockInList.forEach(item => itemsSet.add(item.ItemName));
+    stockOutList.forEach(item => itemsSet.add(item.ItemName || "Unknown Item"));
+    const itemsList = Array.from(itemsSet).sort();
+
+    const map: Record<string, Record<number, { incoming: number; outgoing: number }>> = {};
+    itemsList.forEach(item => {
+      map[item] = {};
+    });
+
+    const isSameWeek = (d1: Date, d2Start: Date) => {
+      const t1 = d1.getTime();
+      const t2Start = d2Start.getTime();
+      const t2End = t2Start + 7 * 24 * 60 * 60 * 1000;
+      return t1 >= t2Start && t1 < t2End;
+    };
+
+    stockInList.forEach(item => {
+      const date = new Date(item.stockDate);
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const dom = date.getDate();
+
+      let colIndex = -1;
+
+      if (matrixView === "yearly") {
+        if (year === selectedYear) {
+          colIndex = month;
+        }
+      } else if (matrixView === "monthly") {
+        if (year === selectedYear && month === selectedMonth) {
+          colIndex = dom - 1;
+        }
+      } else if (matrixView === "weekly") {
+        if (isSameWeek(date, selectedWeekStart)) {
+          colIndex = (date.getDay() + 6) % 7;
+        }
+      }
+
+      if (colIndex !== -1) {
+        const row = map[item.ItemName];
+        if (row) {
+          if (!row[colIndex]) {
+            row[colIndex] = { incoming: 0, outgoing: 0 };
+          }
+          row[colIndex].incoming += item.quantityin;
+        }
+      }
+    });
+
+    stockOutList.forEach(item => {
+      const itemName = item.ItemName || "Unknown Item";
+      const date = new Date(item.stockoutDate);
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const dom = date.getDate();
+
+      let colIndex = -1;
+
+      if (matrixView === "yearly") {
+        if (year === selectedYear) {
+          colIndex = month;
+        }
+      } else if (matrixView === "monthly") {
+        if (year === selectedYear && month === selectedMonth) {
+          colIndex = dom - 1;
+        }
+      } else if (matrixView === "weekly") {
+        if (isSameWeek(date, selectedWeekStart)) {
+          colIndex = (date.getDay() + 6) % 7;
+        }
+      }
+
+      if (colIndex !== -1) {
+        const row = map[itemName];
+        if (row) {
+          if (!row[colIndex]) {
+            row[colIndex] = { incoming: 0, outgoing: 0 };
+          }
+          row[colIndex].outgoing += item.quantityout;
+        }
+      }
+    });
+
+    return { itemsList, map };
+  }, [stockInList, stockOutList, matrixView, selectedYear, selectedMonth, selectedWeekStart]);
 
   // 3. Compute filtered KPIs
   const filteredStats = useMemo(() => {
@@ -340,43 +440,194 @@ const Reports = () => {
         </Card>
       </div>
 
-      {/* Chart — uses unique gradient IDs to avoid conflict with Dashboard */}
+      {/* Segmented Matrix Breakdown Card */}
       <Card className="border border-border/80 shadow-sm bg-card print:border print:shadow-none">
-        <CardHeader className="p-4 pb-0">
-          <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">
-            {hasActiveFilters ? "Filtered" : "7-Day"} Stock Movement Trend
-          </CardTitle>
+        <CardHeader className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-border">
+          <div className="space-y-1">
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
+              Segmented Matrix Breakdown
+            </CardTitle>
+            <p className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">
+              Displaying details for {matrixView} view
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 print:hidden">
+            {/* View Selector buttons */}
+            <div className="inline-flex rounded-lg border border-border p-0.5 bg-muted/40">
+              {(["weekly", "monthly", "yearly"] as const).map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setMatrixView(v)}
+                  className={`text-[10px] uppercase font-bold px-3 py-1 rounded-md transition-all duration-200 ${
+                    matrixView === v
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
+
+            <div className="w-px h-6 bg-border" />
+
+            {/* Navigation buttons/inputs */}
+            <div className="flex flex-wrap items-center gap-2">
+              {matrixView === "weekly" && (
+                <div className="flex items-center gap-1.5 bg-muted/20 border border-border rounded-lg p-0.5">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    type="button"
+                    className="h-7 w-7"
+                    onClick={() => {
+                      const prev = new Date(selectedWeekStart);
+                      prev.setDate(selectedWeekStart.getDate() - 7);
+                      setSelectedWeekStart(prev);
+                    }}
+                  >
+                    &larr;
+                  </Button>
+                  <span className="text-[10px] font-bold px-1 whitespace-nowrap text-muted-foreground">
+                    {formatWeekRange()}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    type="button"
+                    className="h-7 w-7"
+                    onClick={() => {
+                      const next = new Date(selectedWeekStart);
+                      next.setDate(selectedWeekStart.getDate() + 7);
+                      setSelectedWeekStart(next);
+                    }}
+                  >
+                    &rarr;
+                  </Button>
+                </div>
+              )}
+
+              {matrixView === "monthly" && (
+                <div className="flex items-center gap-1.5">
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                    className="text-[11px] font-semibold bg-background border border-border rounded-md px-2 py-1 focus:outline-none"
+                  >
+                    {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((m, idx) => (
+                      <option key={idx} value={idx}>{m}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                    className="text-[11px] font-semibold bg-background border border-border rounded-md px-2 py-1 focus:outline-none"
+                  >
+                    {Array.from({ length: 7 }).map((_, idx) => {
+                      const y = new Date().getFullYear() - 3 + idx;
+                      return <option key={idx} value={y}>{y}</option>;
+                    })}
+                  </select>
+                </div>
+              )}
+
+              {matrixView === "yearly" && (
+                <div className="flex items-center gap-1.5">
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                    className="text-[11px] font-semibold bg-background border border-border rounded-md px-2 py-1 focus:outline-none"
+                  >
+                    {Array.from({ length: 7 }).map((_, idx) => {
+                      const y = new Date().getFullYear() - 3 + idx;
+                      return <option key={idx} value={y}>{y}</option>;
+                    })}
+                  </select>
+                </div>
+              )}
+            </div>
+          </div>
         </CardHeader>
-        <CardContent className="h-64 p-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="rptColorIn" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="rptColorOut" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2}/>
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-              <XAxis dataKey="date" className="text-[10px] fill-muted-foreground font-semibold" />
-              <YAxis className="text-[10px] fill-muted-foreground font-semibold" />
-              <Tooltip
-                contentStyle={{
-                  fontSize: "11px",
-                  borderRadius: "8px",
-                  border: "1px solid hsl(0 0% 14%)",
-                  backgroundColor: "hsl(0 0% 8%)",
-                  color: "#fff"
-                }}
-              />
-              <Legend wrapperStyle={{ fontSize: "10px", fontWeight: 600 }} />
-              <Area type="monotone" dataKey="incoming" name="Stock In (+)" stroke="#10b981" fillOpacity={1} fill="url(#rptColorIn)" strokeWidth={2} />
-              <Area type="monotone" dataKey="outgoing" name="Stock Out (-)" stroke="#ef4444" fillOpacity={1} fill="url(#rptColorOut)" strokeWidth={2} />
-            </AreaChart>
-          </ResponsiveContainer>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto w-full max-h-[400px]">
+            <table className="w-full text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-border bg-muted/20 text-muted-foreground whitespace-nowrap">
+                  {/* Sticky ITEM Column Header */}
+                  <th className="sticky left-0 bg-background/95 backdrop-blur z-20 border-r border-border font-bold p-3 text-left uppercase tracking-wider text-[10px] min-w-[150px] max-w-[200px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                    ITEM
+                  </th>
+                  {colHeaders.map((header) => (
+                    <th key={header.index} className="p-3 border-r border-border text-center font-bold text-[10px] min-w-[85px] last:border-r-0">
+                      <div>{header.title}</div>
+                      {header.subtitle && (
+                        <div className="text-[8px] font-medium text-muted-foreground mt-0.5">{header.subtitle}</div>
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {matrixData.itemsList.length === 0 ? (
+                  <tr>
+                    <td colSpan={colHeaders.length + 1} className="p-8 text-center text-muted-foreground italic text-xs">
+                      No inventory items found.
+                    </td>
+                  </tr>
+                ) : (
+                  matrixData.itemsList.map((item, idx) => (
+                    <tr key={idx} className="border-b border-border last:border-0 hover:bg-muted/5 transition-colors">
+                      {/* Sticky ITEM Cell */}
+                      <td className="sticky left-0 bg-background/95 backdrop-blur z-10 border-r border-border font-bold p-3 text-foreground shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] min-w-[150px] max-w-[200px] truncate">
+                        {item}
+                      </td>
+                      {colHeaders.map((header) => {
+                        const cell = matrixData.map[item][header.index];
+                        if (!cell || (cell.incoming === 0 && cell.outgoing === 0)) {
+                          return (
+                            <td key={header.index} className="p-3 text-center border-r border-border text-muted-foreground/30 font-semibold last:border-r-0 select-none">
+                              -
+                            </td>
+                          );
+                        }
+
+                        let cellStyle = "";
+                        let primaryText = "";
+                        let secondaryText = "";
+
+                        if (cell.incoming > 0 && cell.outgoing === 0) {
+                          cellStyle = "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100/50 dark:bg-emerald-950/20 dark:text-emerald-300 dark:border-emerald-800/30 dark:hover:bg-emerald-950/30";
+                          primaryText = `+${cell.incoming.toLocaleString()}`;
+                          secondaryText = "INCOMING";
+                        } else if (cell.outgoing > 0 && cell.incoming === 0) {
+                          cellStyle = "bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100/50 dark:bg-rose-950/20 dark:text-rose-300 dark:border-rose-800/30 dark:hover:bg-rose-950/30";
+                          primaryText = `-${cell.outgoing.toLocaleString()}`;
+                          secondaryText = "OUTGOING";
+                        } else {
+                          cellStyle = "bg-indigo-50 text-indigo-700 border border-indigo-150 hover:bg-indigo-100/50 dark:bg-indigo-950/20 dark:text-indigo-300 dark:border-indigo-800/30 dark:hover:bg-indigo-950/30";
+                          const balance = cell.incoming - cell.outgoing;
+                          primaryText = balance >= 0 ? `+${balance.toLocaleString()}` : `${balance.toLocaleString()}`;
+                          secondaryText = `${cell.incoming} IN / ${cell.outgoing} OUT`;
+                        }
+
+                        return (
+                          <td key={header.index} className="p-1.5 border-r border-border text-center align-middle last:border-r-0">
+                            <div className={`p-1.5 rounded-lg flex flex-col items-center justify-center text-center min-w-[75px] h-[44px] transition-all duration-200 ${cellStyle}`}>
+                              <span className="font-extrabold text-[10px] leading-none tracking-tight">{primaryText}</span>
+                              <span className="text-[7.5px] font-bold tracking-wider leading-none mt-1 opacity-85">{secondaryText}</span>
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
 
